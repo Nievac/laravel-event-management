@@ -37,6 +37,12 @@ class UserResource extends Resource
                         ->password()
                         ->required()
                         ->maxLength(255),
+                    Forms\Components\Select::make('roles')
+                        ->multiple()
+                        ->relationship('roles', 'name')->preload(),
+                    Forms\Components\Select::make('permissions')
+                        ->multiple()
+                        ->relationship('permissions', 'name')->preload(),
                 ])->columns(2)
             ]);
     }
@@ -78,5 +84,14 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        // do not include authenticated user's data
+        return parent::getEloquentQuery()->whereNot(function($query) {
+            $query->where('id', auth()->user()->id);
+        });
+
     }
 }
